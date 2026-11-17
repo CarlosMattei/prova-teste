@@ -5,12 +5,12 @@ import { TasksService } from '../tasks.service';
 import { TaskCreateModal } from './task-create-modal';
 
 const CREATED: Task = {
-  id: '99',
+  id: 99,
   title: 'Write integration tests',
   description: 'Cover the create task flow.',
-  assignee: 'Ana Souza',
-  status: 'PENDING',
-  priority: 'HIGH',
+  responsible: 'Ana Souza',
+  status: 'PENDENTE',
+  priority: 'ALTA',
 };
 
 describe('TaskCreateModal', () => {
@@ -49,13 +49,13 @@ describe('TaskCreateModal', () => {
     expect(submitButton().disabled).toBe(true);
 
     fill('#task-title', 'Write integration tests');
-    fill('#task-assignee', 'Ana Souza');
+    fill('#task-responsible', 'Ana Souza');
     expect(submitButton().disabled).toBe(true);
 
-    fill('#task-status', 'PENDING');
+    fill('#task-status', 'PENDENTE');
     expect(submitButton().disabled).toBe(true);
 
-    fill('#task-priority', 'HIGH');
+    fill('#task-priority', 'ALTA');
     expect(submitButton().disabled).toBe(false);
   });
 
@@ -64,10 +64,10 @@ describe('TaskCreateModal', () => {
     fixture.componentInstance.saved.subscribe((task) => created.push(task));
 
     fill('#task-title', '  Write integration tests  ');
-    fill('#task-assignee', ' Ana Souza ');
+    fill('#task-responsible', ' Ana Souza ');
     fill('#task-description', 'Cover the create task flow.');
-    fill('#task-status', 'PENDING');
-    fill('#task-priority', 'HIGH');
+    fill('#task-status', 'PENDENTE');
+    fill('#task-priority', 'ALTA');
 
     root().querySelector('form')!.dispatchEvent(new Event('submit'));
     await fixture.whenStable();
@@ -75,9 +75,9 @@ describe('TaskCreateModal', () => {
     expect(createTask).toHaveBeenCalledWith({
       title: 'Write integration tests',
       description: 'Cover the create task flow.',
-      assignee: 'Ana Souza',
-      status: 'PENDING',
-      priority: 'HIGH',
+      responsible: 'Ana Souza',
+      status: 'PENDENTE',
+      priority: 'ALTA',
     });
     expect(created).toEqual([CREATED]);
   });

@@ -6,20 +6,20 @@ import { Task } from './tasks/task.model';
 
 const TASKS: Task[] = [
   {
-    id: '1',
+    id: 1,
     title: 'Develop login screen',
     description: 'Create the system authentication interface.',
-    assignee: 'Carlos Henrique',
-    status: 'IN_PROGRESS',
-    priority: 'HIGH',
+    responsible: 'Carlos Henrique',
+    status: 'EM ANDAMENTO',
+    priority: 'ALTA',
   },
   {
-    id: '2',
+    id: 2,
     title: 'Create project documentation',
     description: 'Document the installation and execution.',
-    assignee: 'Pedro Santos',
-    status: 'COMPLETED',
-    priority: 'MEDIUM',
+    responsible: 'Pedro Santos',
+    status: 'CONCLUIDA',
+    priority: 'MEDIA',
   },
 ];
 
@@ -65,7 +65,7 @@ describe('App', () => {
     const fixture = await render();
     const element = fixture.nativeElement as HTMLElement;
 
-    element.querySelectorAll<HTMLButtonElement>('app-task-card button')[1].click();
+    element.querySelectorAll<HTMLButtonElement>('app-task-card .card-body')[1].click();
     fixture.detectChanges();
 
     expect(element.querySelector('app-task-detail')?.textContent).toContain(
