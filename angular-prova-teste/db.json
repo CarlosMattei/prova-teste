@@ -1,0 +1,77 @@
+{
+  "tasks": [
+    {
+      "title": "Implement users Login",
+      "description": "Develop endpoints for user registration, retrieval, and updates.",
+      "assignee": "Ana Souza",
+      "status": "PENDING",
+      "priority": "HIGH",
+      "id": "2"
+    },
+    {
+      "id": "4",
+      "title": "Develop dashboard",
+      "description": "Create the main dashboard with indicators and an overview of activities.",
+      "assignee": "Mariana Lima",
+      "status": "IN_PROGRESS",
+      "priority": "HIGH"
+    },
+    {
+      "id": "5",
+      "title": "Implement task filters",
+      "description": "Add filters to display tasks by status.",
+      "assignee": "Carlos Henrique",
+      "status": "PENDING",
+      "priority": "MEDIUM"
+    },
+    {
+      "id": "7",
+      "title": "Implement task editing",
+      "description": "Allow users to modify the title, description, assignee, and priority.",
+      "assignee": "Pedro Santos",
+      "status": "PENDING",
+      "priority": "HIGH"
+    },
+    {
+      "id": "8",
+      "title": "Configure mobile navigation",
+      "description": "Implement navigation between the main screens of the Expo application.",
+      "assignee": "Mariana Lima",
+      "status": "IN_PROGRESS",
+      "priority": "MEDIUM"
+    },
+    {
+      "id": "10",
+      "title": "Implement task deletion",
+      "description": "Add functionality to delete registered tasks.",
+      "assignee": "Ana Souza",
+      "status": "PENDING",
+      "priority": "MEDIUM"
+    },
+    {
+      "id": "11",
+      "title": "Integrate mobile app with API",
+      "description": "Configure HTTP communication between the Expo application and the API.",
+      "assignee": "Pedro Santos",
+      "status": "IN_PROGRESS",
+      "priority": "HIGH"
+    },
+    {
+      "id": "12",
+      "title": "Perform integration tests",
+      "description": "Validate data sharing between Angular, the API, and Expo.",
+      "assignee": "Mariana Lima",
+      "status": "PENDING",
+      "priority": "HIGH"
+    },
+    {
+      "title": "Make Light Mode",
+      "description": "",
+      "assignee": "Carlos Henrique",
+      "status": "PENDING",
+      "priority": "MEDIUM",
+      "id": "neIleE4Kp-k"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}

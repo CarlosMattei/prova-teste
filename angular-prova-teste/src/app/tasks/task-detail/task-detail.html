@@ -1,0 +1,36 @@
+@let item = task();
+
+@if (item) {
+  <article class="detail-card">
+    <header class="detail-header">
+      <span class="identifier">Task #{{ item.id }}</span>
+      <h2>{{ item.title }}</h2>
+      <div class="badges">
+        <span class="badge text-bg-{{ taskStatus[item.status].badge }}">
+          {{ taskStatus[item.status].label }}
+        </span>
+        <span class="badge text-bg-{{ taskPriority[item.priority].badge }}">
+          {{ taskPriority[item.priority].label }} priority
+        </span>
+      </div>
+    </header>
+
+    <section class="block">
+      <h3>Description</h3>
+      <p class="description">{{ item.description }}</p>
+    </section>
+
+    <dl class="metadata">
+      <dt>Assignee</dt>
+      <dd>{{ item.assignee }}</dd>
+      <dt>Status</dt>
+      <dd>{{ taskStatus[item.status].label }}</dd>
+      <dt>Priority</dt>
+      <dd>{{ taskPriority[item.priority].label }}</dd>
+    </dl>
+  </article>
+} @else {
+  <div class="empty-detail">
+    <p>Select a task from the list to view its details.</p>
+  </div>
+}
