@@ -19,7 +19,7 @@ export class App {
   private readonly tasksService = inject(TasksService);
 
   protected readonly tasks = this.tasksService.tasks;
-  private readonly selectedTaskId = signal<string | null>(null);
+  private readonly selectedTaskId = signal<number | null>(null);
   protected readonly createModalOpen = signal(false);
   protected readonly editingTask = signal<Task | null>(null);
   protected readonly deletingTask = signal<Task | null>(null);
@@ -28,9 +28,9 @@ export class App {
   protected readonly filter = signal<TaskFilter>('ALL');
   protected readonly filterOptions: { value: TaskFilter; label: string }[] = [
     { value: 'ALL', label: 'Todos' },
-    { value: 'PENDING', label: 'Pendentes' },
-    { value: 'IN_PROGRESS', label: 'Em Andamento' },
-    { value: 'COMPLETED', label: 'Concluido' },
+    { value: 'PENDENTE', label: 'Pendentes' },
+    { value: 'EM ANDAMENTO', label: 'Em Andamento' },
+    { value: 'CONCLUIDA', label: 'Concluído' },
   ];
   protected readonly filterLabel = computed(
     () => this.filterOptions.find((option) => option.value === this.filter())!.label,
@@ -49,9 +49,9 @@ export class App {
     return tasks.find((task) => task.id === this.selectedTaskId()) ?? tasks[0] ?? null;
   });
 
-  /** Suggestions for the assignee field, derived from the tasks already loaded. */
-  protected readonly assignees = computed(() => [
-    ...new Set(this.tasks.value().map((task) => task.assignee)),
+  /** Suggestions for the responsible field, derived from the tasks already loaded. */
+  protected readonly responsibles = computed(() => [
+    ...new Set(this.tasks.value().map((task) => task.responsible)),
   ]);
 
   protected selectTask(task: Task): void {

@@ -14,7 +14,7 @@ public record TaskRequest(
         String responsible,
 
         @NotBlank(message = "Status da tarefa é obrigatório") 
-        @Pattern(regexp = "PENDENTE|EM_ANDAMENTO|CONCLUIDA", message = "Status deve ser PENDENTE, EM_ANDAMENTO ou CONCLUIDA") 
+        @Pattern(regexp = "PENDENTE|EM ANDAMENTO|CONCLUIDA", message = "Status deve ser PENDENTE, EM_ANDAMENTO ou CONCLUIDA") 
         String status,
 
         @NotBlank(message = "Prioridade da tarefa é obrigatória") 

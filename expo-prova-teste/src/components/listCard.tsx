@@ -3,8 +3,7 @@ import { Pressable, StyleSheet, Text } from "react-native";
 type ListCardProps = {
   title: string;
   description: string;
-  onPress?: () => void; // Adicionei a propriedade onPress para lidar com o evento de clique 
-  //futuramente vai levá-lo para a página de detalhes da tarefa
+  onPress?: () => void;
 };
 
 export function ListCard({ title, description, onPress }: ListCardProps) {

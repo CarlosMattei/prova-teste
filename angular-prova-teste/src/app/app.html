@@ -94,7 +94,7 @@
 @if (createModalOpen() || editingTask()) {
   <app-task-create-modal
     [task]="editingTask()"
-    [assignees]="assignees()"
+    [responsibles]="responsibles()"
     (saved)="onTaskSaved($event)"
     (closed)="closeModal()"
   />

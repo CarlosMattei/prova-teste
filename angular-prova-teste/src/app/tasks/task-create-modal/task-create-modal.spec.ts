@@ -5,24 +5,26 @@ import { TasksService } from '../tasks.service';
 import { TaskCreateModal } from './task-create-modal';
 
 const CREATED: Task = {
-  id: '99',
+  id: 99,
   title: 'Write integration tests',
   description: 'Cover the create task flow.',
-  assignee: 'Ana Souza',
-  status: 'PENDING',
-  priority: 'HIGH',
+  responsible: 'Ana Souza',
+  status: 'PENDENTE',
+  priority: 'ALTA',
 };
 
 describe('TaskCreateModal', () => {
   let fixture: ComponentFixture<TaskCreateModal>;
   let createTask: ReturnType<typeof vi.fn<(input: CreateTaskInput) => Promise<Task>>>;
+  let updateTask: ReturnType<typeof vi.fn<(task: Task) => Promise<Task>>>;
 
   beforeEach(async () => {
     createTask = vi.fn<(input: CreateTaskInput) => Promise<Task>>().mockResolvedValue(CREATED);
+    updateTask = vi.fn<(task: Task) => Promise<Task>>().mockResolvedValue(CREATED);
 
     await TestBed.configureTestingModule({
       imports: [TaskCreateModal],
-      providers: [{ provide: TasksService, useValue: { createTask } }],
+      providers: [{ provide: TasksService, useValue: { createTask, updateTask } }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TaskCreateModal);
@@ -49,13 +51,13 @@ describe('TaskCreateModal', () => {
     expect(submitButton().disabled).toBe(true);
 
     fill('#task-title', 'Write integration tests');
-    fill('#task-assignee', 'Ana Souza');
+    fill('#task-responsible', 'Ana Souza');
     expect(submitButton().disabled).toBe(true);
 
-    fill('#task-status', 'PENDING');
+    fill('#task-status', 'PENDENTE');
     expect(submitButton().disabled).toBe(true);
 
-    fill('#task-priority', 'HIGH');
+    fill('#task-priority', 'ALTA');
     expect(submitButton().disabled).toBe(false);
   });
 
@@ -64,10 +66,10 @@ describe('TaskCreateModal', () => {
     fixture.componentInstance.saved.subscribe((task) => created.push(task));
 
     fill('#task-title', '  Write integration tests  ');
-    fill('#task-assignee', ' Ana Souza ');
+    fill('#task-responsible', ' Ana Souza ');
     fill('#task-description', 'Cover the create task flow.');
-    fill('#task-status', 'PENDING');
-    fill('#task-priority', 'HIGH');
+    fill('#task-status', 'PENDENTE');
+    fill('#task-priority', 'ALTA');
 
     root().querySelector('form')!.dispatchEvent(new Event('submit'));
     await fixture.whenStable();
@@ -75,15 +77,33 @@ describe('TaskCreateModal', () => {
     expect(createTask).toHaveBeenCalledWith({
       title: 'Write integration tests',
       description: 'Cover the create task flow.',
-      assignee: 'Ana Souza',
-      status: 'PENDING',
-      priority: 'HIGH',
+      responsible: 'Ana Souza',
+      status: 'PENDENTE',
+      priority: 'ALTA',
     });
     expect(created).toEqual([CREATED]);
   });
 
-  it('should emit closed on Escape', () => {
-    let closed = 0;
+  it('should update the task when the modal opens with an existing one', async () => {
+    const editFixture = TestBed.createComponent(TaskCreateModal);
+    editFixture.componentRef.setInput('task', CREATED);
+    editFixture.detectChanges();
+    await editFixture.whenStable();
+
+    const saved: Task[] = [];
+    editFixture.componentInstance.saved.subscribe((task) => saved.push(task));
+
+    (editFixture.nativeElement as HTMLElement)
+      .querySelector('form')!
+      .dispatchEvent(new Event('submit'));
+    await editFixture.whenStable();
+
+    expect(updateTask).toHaveBeenCalledWith(CREATED);
+    expect(createTask).not.toHaveBeenCalled();
+    expect(saved).toEqual([CREATED]);
+  });
+
+  it('should emit closed on Escape', () => {    let closed = 0;
     fixture.componentInstance.closed.subscribe(() => closed++);
 
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));

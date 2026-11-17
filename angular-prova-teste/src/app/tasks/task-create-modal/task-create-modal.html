@@ -36,7 +36,7 @@
 
           <div class="field">
             <label class="form-label" for="task-title">
-              Title <span class="required" aria-hidden="true">*</span>
+              Título <span class="required" aria-hidden="true">*</span>
             </label>
             <input
               #titleInput
@@ -54,7 +54,7 @@
           </div>
 
           <div class="field">
-            <label class="form-label" for="task-description">Description</label>
+            <label class="form-label" for="task-description">Descrição</label>
             <textarea
               id="task-description"
               class="form-control"
@@ -65,26 +65,26 @@
           </div>
 
           <div class="field">
-            <label class="form-label" for="task-assignee">
-              Assignee <span class="required" aria-hidden="true">*</span>
+            <label class="form-label" for="task-responsible">
+              Responsável <span class="required" aria-hidden="true">*</span>
             </label>
             <input
-              id="task-assignee"
+              id="task-responsible"
               type="text"
               class="form-control"
-              formControlName="assignee"
-              list="assignee-options"
+              formControlName="responsible"
+              list="responsible-options"
               maxlength="80"
               autocomplete="off"
               placeholder="Search or type a name"
-              [class.is-invalid]="form.controls.assignee.touched && form.controls.assignee.invalid"
+              [class.is-invalid]="form.controls.responsible.touched && form.controls.responsible.invalid"
             />
-            <datalist id="assignee-options">
-              @for (assignee of assignees(); track assignee) {
-                <option [value]="assignee"></option>
+            <datalist id="responsible-options">
+              @for (responsible of responsibles(); track responsible) {
+                <option [value]="responsible"></option>
               }
             </datalist>
-            @if (form.controls.assignee.touched && form.controls.assignee.invalid) {
+            @if (form.controls.responsible.touched && form.controls.responsible.invalid) {
               <p class="invalid-feedback d-block">Enter the person responsible for the task.</p>
             }
           </div>
@@ -92,8 +92,7 @@
           <div class="field-grid">
             <div class="field">
               <label class="form-label" for="task-status">
-                Status <span class="required" aria-hidden="true">*</span>
-              </label>
+                Status <span class="required" aria-hidden="true">*</span>              </label>
               <select
                 id="task-status"
                 class="form-select"

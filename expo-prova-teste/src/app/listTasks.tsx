@@ -93,6 +93,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#F9FAFB",
     padding: 16,
   },
+  center: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#F9FAFB",
+    padding: 16,
+  },
   title: {
     fontSize: 20,
     fontWeight: "bold",
@@ -106,6 +113,15 @@ const styles = StyleSheet.create({
   listContent: {
     gap: 12,
     paddingBottom: 24,
+  },
+  emptyText: {
+    color: "#6B7280",
+    fontSize: 14,
+  },
+  errorText: {
+    color: "#DC2626",
+    fontSize: 16,
+    textAlign: "center",
   },
 });
 

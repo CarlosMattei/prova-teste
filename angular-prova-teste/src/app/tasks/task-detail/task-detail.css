@@ -84,6 +84,19 @@
   margin: 0;
 }
 
+.status-select {
+  max-width: 14rem;
+}
+
+.status-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--bs-secondary-color, #6c757d);
+}
+
 @media (min-width: 769px) {
   :host {
     position: sticky;

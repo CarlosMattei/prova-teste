@@ -80,6 +80,7 @@ function getInitials(name: string): string {
 }
 
 export default function DetailsScreen() {
+  // O `id` já é recebido via parâmetro de rota quando o usuário clica em um card na tela `listTasks`.
   const { id } = useLocalSearchParams<{ id?: string }>();
   const taskId = id ?? '1';
   const [task, setTask] = useState<Task | null>(null);
@@ -271,6 +272,7 @@ export default function DetailsScreen() {
               <Text style={[styles.text, styles.pageTitle]}>Detalhes da tarefa</Text>
             </View>
 
+            {/* TODO (Integração Backend): Verificar e ajustar os nomes das propriedades abaixo (`category`, `status`, `priority`, `assignee`, `role`, `initials`) para corresponderem exatamente aos campos retornados pelo JSON do backend Java. */}
             <View
               style={[
                 styles.taskCard,
