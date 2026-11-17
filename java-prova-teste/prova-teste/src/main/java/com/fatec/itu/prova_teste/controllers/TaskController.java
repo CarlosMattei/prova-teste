@@ -1,17 +1,27 @@
 package com.fatec.itu.prova_teste.controllers;
 
+import java.net.URI;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import com.fatec.itu.prova_teste.dtos.TaskResponse;
+import com.fatec.itu.prova_teste.dtos.TaskRequest;
+
 import com.fatec.itu.prova_teste.services.TaskService;
+
+import jakarta.validation.Valid;
+
 
 @RestController 
 @CrossOrigin 
@@ -30,5 +40,20 @@ public class TaskController {
     @GetMapping("{id}")
     public ResponseEntity<TaskResponse> getById(@PathVariable long id){ 
         return ResponseEntity.ok(service.findById(id));
+    }
+
+    @PostMapping
+    public ResponseEntity<TaskResponse> save(@Valid @RequestBody TaskRequest task)
+    {
+        TaskResponse t = service.save(task);
+       
+        URI location = ServletUriComponentsBuilder
+                       .fromCurrentRequest()
+                       .path("/{id}")
+                       .buildAndExpand(t.id())
+                       .toUri();
+        return ResponseEntity.created(location).body(t);
+
+
     }
 }
