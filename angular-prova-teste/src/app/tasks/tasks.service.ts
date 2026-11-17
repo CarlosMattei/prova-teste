@@ -18,4 +18,17 @@ export class TasksService {
     this.tasks.reload();
     return created;
   }
+
+  /** Replaces a task in place and refreshes the list. */
+  async updateTask(task: Task): Promise<Task> {
+    const updated = await firstValueFrom(this.http.put<Task>(`/api/tasks/${task.id}`, task));
+    this.tasks.reload();
+    return updated;
+  }
+
+  /** Deletes a task and refreshes the list. */
+  async deleteTask(id: string): Promise<void> {
+    await firstValueFrom(this.http.delete<void>(`/api/tasks/${id}`));
+    this.tasks.reload();
+  }
 }

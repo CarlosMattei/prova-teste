@@ -1,15 +1,19 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { TaskCard } from './tasks/task-card/task-card';
+import { TaskConfirmModal } from './tasks/task-confirm-modal/task-confirm-modal';
 import { TaskCreateModal } from './tasks/task-create-modal/task-create-modal';
 import { TaskDetail } from './tasks/task-detail/task-detail';
-import { Task } from './tasks/task.model';
+import { Task, TaskStatus } from './tasks/task.model';
 import { TasksService } from './tasks/tasks.service';
 
+type TaskFilter = 'ALL' | TaskStatus;
+
 @Component({
-  imports: [TaskCard, TaskDetail, TaskCreateModal],
+  imports: [TaskCard, TaskDetail, TaskCreateModal, TaskConfirmModal],
   selector: 'app-root',
   styleUrl: './app.css',
   templateUrl: './app.html',
+  host: { '(document:click)': 'filterOpen.set(false)' },
 })
 export class App {
   private readonly tasksService = inject(TasksService);
@@ -17,6 +21,27 @@ export class App {
   protected readonly tasks = this.tasksService.tasks;
   private readonly selectedTaskId = signal<string | null>(null);
   protected readonly createModalOpen = signal(false);
+  protected readonly editingTask = signal<Task | null>(null);
+  protected readonly deletingTask = signal<Task | null>(null);
+
+  protected readonly filterOpen = signal(false);
+  protected readonly filter = signal<TaskFilter>('ALL');
+  protected readonly filterOptions: { value: TaskFilter; label: string }[] = [
+    { value: 'ALL', label: 'Todos' },
+    { value: 'PENDING', label: 'Pendentes' },
+    { value: 'IN_PROGRESS', label: 'Em Andamento' },
+    { value: 'COMPLETED', label: 'Concluido' },
+  ];
+  protected readonly filterLabel = computed(
+    () => this.filterOptions.find((option) => option.value === this.filter())!.label,
+  );
+
+  /** Tasks matching the selected status filter. */
+  protected readonly visibleTasks = computed(() => {
+    const filter = this.filter();
+    const tasks = this.tasks.value();
+    return filter === 'ALL' ? tasks : tasks.filter((task) => task.status === filter);
+  });
 
   /** The clicked task, or the first task when nothing has been clicked yet. */
   protected readonly selectedTask = computed<Task | null>(() => {
@@ -33,17 +58,30 @@ export class App {
     this.selectedTaskId.set(task.id);
   }
 
+  protected setFilter(filter: TaskFilter): void {
+    this.filter.set(filter);
+  }
+
   protected openCreateModal(): void {
     this.createModalOpen.set(true);
   }
 
-  protected closeCreateModal(): void {
-    this.createModalOpen.set(false);
+  protected openEditModal(task: Task): void {
+    this.editingTask.set(task);
   }
 
-  protected onTaskCreated(task: Task): void {
+  protected closeModal(): void {
     this.createModalOpen.set(false);
+    this.editingTask.set(null);
+  }
+
+  protected onTaskSaved(task: Task): void {
+    this.closeModal();
     this.selectedTaskId.set(task.id);
+  }
+
+  protected onTaskDeleted(): void {
+    this.deletingTask.set(null);
   }
 
   protected reload(): void {

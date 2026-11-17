@@ -5,6 +5,7 @@ import {
   inject,
   input,
   OnDestroy,
+  OnInit,
   output,
   signal,
   viewChild,
@@ -34,14 +35,17 @@ const FOCUSABLE_SELECTOR =
     '(document:keydown.escape)': 'close()',
   },
 })
-export class TaskCreateModal implements OnDestroy {
+export class TaskCreateModal implements OnInit, OnDestroy {
   private readonly tasksService = inject(TasksService);
   private readonly fb = inject(NonNullableFormBuilder);
+
+  /** The task being edited; when omitted the modal creates a new one. */
+  readonly task = input<Task | null>(null);
 
   /** Assignees already used by the team, offered as suggestions while typing. */
   readonly assignees = input<string[]>([]);
 
-  readonly created = output<Task>();
+  readonly saved = output<Task>();
   readonly closed = output<void>();
 
   private readonly dialog = viewChild<ElementRef<HTMLElement>>('dialog');
@@ -82,6 +86,19 @@ export class TaskCreateModal implements OnDestroy {
     this.previouslyFocused?.focus();
   }
 
+  ngOnInit(): void {
+    const task = this.task();
+    if (task) {
+      this.form.setValue({
+        title: task.title,
+        description: task.description,
+        assignee: task.assignee,
+        status: task.status,
+        priority: task.priority,
+      });
+    }
+  }
+
   protected close(): void {
     if (this.saving()) {
       return;
@@ -104,13 +121,22 @@ export class TaskCreateModal implements OnDestroy {
       priority: value.priority as TaskPriority,
     };
 
+    const task = this.task();
     this.saving.set(true);
     this.error.set(null);
 
     try {
-      this.created.emit(await this.tasksService.createTask(input));
+      this.saved.emit(
+        task
+          ? await this.tasksService.updateTask({ ...input, id: task.id })
+          : await this.tasksService.createTask(input),
+      );
     } catch {
-      this.error.set('Could not create the task. Check the API and try again.');
+      this.error.set(
+        task
+          ? 'Could not save the task. Check the API and try again.'
+          : 'Could not create the task. Check the API and try again.',
+      );
     } finally {
       this.saving.set(false);
     }

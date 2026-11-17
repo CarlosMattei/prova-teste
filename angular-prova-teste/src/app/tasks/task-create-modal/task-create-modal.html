@@ -14,7 +14,9 @@
     <div class="modal-content" (click)="$event.stopPropagation()">
       <header class="modal-header align-items-start">
         <div>
-          <h2 class="modal-title fs-5" id="create-task-title">Add task</h2>
+          <h2 class="modal-title fs-5" id="create-task-title">
+            {{ task() ? 'Edit task' : 'Add task' }}
+          </h2>
           <p class="modal-intro">Fill in the task details. Fields marked * are required.</p>
         </div>
         <button
@@ -133,7 +135,7 @@
 
       <footer class="modal-footer">
         <p class="modal-hint" id="create-task-hint">
-          Fill in all required fields to enable “Add task”.
+          Fill in all required fields to enable saving.
         </p>
         <div class="modal-actions">
           <button type="button" class="btn btn-outline-secondary" [disabled]="saving()" (click)="close()">
@@ -148,9 +150,9 @@
           >
             @if (saving()) {
               <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-              Adding...
+              Saving...
             } @else {
-              Add task
+              {{ task() ? 'Save changes' : 'Add task' }}
             }
           </button>
         </div>
