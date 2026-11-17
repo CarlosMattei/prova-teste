@@ -6,6 +6,10 @@ const subscribeToHydration = () => () => {};
 const getClientHydrationSnapshot = () => true;
 const getServerHydrationSnapshot = () => false;
 
+export const unstable_settings = {
+  initialRouteName: 'listTasks',
+};
+
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const isHydrated = useSyncExternalStore(
@@ -18,7 +22,7 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={useDarkTheme ? DarkTheme : DefaultTheme}>
       <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" />
+        <Stack.Screen name="listTasks" />
         <Stack.Screen name="detailsScreen" />
       </Stack>
     </ThemeProvider>

@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { MaxContentWidth, Spacing } from '@/constants/theme';
+// TODO (Integração Backend): Substituir a importação de `mockTasks` pela função de busca por ID do service (ex: `fetchTaskById` de `@/services/taskService`) e pelo tipo `Task` de `@/models/tasks`.
 import { mockTasks } from '@/data/mockTasks';
 
 const Spacing = {
@@ -17,7 +19,13 @@ const statusOptions = ['Pendente', 'Em andamento', 'Concluída'] as const;
 type TaskStatus = (typeof statusOptions)[number];
 
 export default function DetailsScreen() {
+  // O `id` já é recebido via parâmetro de rota quando o usuário clica em um card na tela `listTasks`.
   const { id } = useLocalSearchParams<{ id?: string }>();
+
+  // TODO (Integração Backend):
+  // 1. Atualmente busca no `mockTasks` (cujos IDs são 'T-2048', 'T-2049', etc.). Como o `id` vindo de `listTasks` vem do backend (ex: '1', '2'), o `.find()` abaixo retorna `undefined` e exibe "Tarefa não encontrada".
+  // 2. Para testar apenas o layout com mock enquanto não integra, pode-se usar: `mockTasks.find((item) => item.id === id) ?? mockTasks[0]`.
+  // 3. Para integrar com o backend Java, substituir a linha abaixo por `useState<Task | null>(null)` + `useEffect` buscando os detalhes da tarefa pelo `id` na API (ex: `GET http://localhost:8080/tasks/${id}`).
   const task = mockTasks.find((item) => item.id === (id ?? mockTasks[0].id));
   const [status, setStatus] = useState<TaskStatus>(() => {
     if (task?.status === 'Em andamento' || task?.status === 'Concluída') {
@@ -47,7 +55,7 @@ export default function DetailsScreen() {
       return;
     }
 
-    router.replace('/');
+    router.replace('/listTasks');
   }
 
   if (!task) {
@@ -99,6 +107,7 @@ export default function DetailsScreen() {
               <Text style={[styles.text, styles.pageTitle]}>Detalhes da tarefa</Text>
             </View>
 
+            {/* TODO (Integração Backend): Verificar e ajustar os nomes das propriedades abaixo (`category`, `status`, `priority`, `assignee`, `role`, `initials`) para corresponderem exatamente aos campos retornados pelo JSON do backend Java. */}
             <View
               style={[
                 styles.taskCard,
