@@ -1,4 +1,3 @@
-
 {
   "tasks": [
     {
@@ -96,6 +95,15 @@
       "assignee": "Mariana Lima",
       "status": "PENDING",
       "priority": "HIGH"
+    },
+    {
+      "title": "Make Light Mode",
+      "description": "",
+      "assignee": "Carlos Henrique",
+      "status": "PENDING",
+      "priority": "MEDIUM",
+      "id": "neIleE4Kp-k"
     }
-  ]
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
 }

@@ -72,4 +72,19 @@ describe('App', () => {
       'Create project documentation',
     );
   });
+
+  it('should open the add task modal from the header button', async () => {
+    const fixture = await render();
+    const element = fixture.nativeElement as HTMLElement;
+
+    expect(element.querySelector('[role="dialog"]')).toBeNull();
+
+    element.querySelector<HTMLButtonElement>('.app-header .btn-primary')!.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(element.querySelector('[role="dialog"]')?.textContent).toContain('Add task');
+    expect(element.querySelector<HTMLButtonElement>('button[type="submit"]')?.disabled).toBe(true);
+  });
 });
