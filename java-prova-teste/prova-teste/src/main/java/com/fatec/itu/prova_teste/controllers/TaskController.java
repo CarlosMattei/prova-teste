@@ -69,4 +69,12 @@ public class TaskController {
         service.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("{id}")
+    public ResponseEntity<Void> update(@PathVariable long id,
+                                       @Valid @RequestBody TaskRequest task)
+    {
+            service.update(task, id);
+            return ResponseEntity.noContent().build();
+    }
 }

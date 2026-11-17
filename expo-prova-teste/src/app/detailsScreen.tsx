@@ -1,10 +1,22 @@
 import { router, useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 // TODO (Integração Backend): Substituir a importação de `mockTasks` pela função de busca por ID do service (ex: `fetchTaskById` de `@/services/taskService`) e pelo tipo `Task` de `@/models/tasks`.
 import { mockTasks } from '@/data/mockTasks';
+
+const Spacing = {
+  one: 4,
+  two: 8,
+  three: 12,
+  four: 16,
+};
+
+const MaxContentWidth = 720;
+const statusOptions = ['Pendente', 'Em andamento', 'Concluída'] as const;
+type TaskStatus = (typeof statusOptions)[number];
 
 export default function DetailsScreen() {
   // O `id` já é recebido via parâmetro de rota quando o usuário clica em um card na tela `listTasks`.
@@ -15,6 +27,14 @@ export default function DetailsScreen() {
   // 2. Para testar apenas o layout com mock enquanto não integra, pode-se usar: `mockTasks.find((item) => item.id === id) ?? mockTasks[0]`.
   // 3. Para integrar com o backend Java, substituir a linha abaixo por `useState<Task | null>(null)` + `useEffect` buscando os detalhes da tarefa pelo `id` na API (ex: `GET http://localhost:8080/tasks/${id}`).
   const task = mockTasks.find((item) => item.id === (id ?? mockTasks[0].id));
+  const [status, setStatus] = useState<TaskStatus>(() => {
+    if (task?.status === 'Em andamento' || task?.status === 'Concluída') {
+      return task.status;
+    }
+
+    return 'Pendente';
+  });
+  const [isStatusMenuOpen, setIsStatusMenuOpen] = useState(false);
   const colors = {
     accent: '#315FCE',
     accentBackground: '#EAF0FF',
@@ -24,9 +44,9 @@ export default function DetailsScreen() {
     warningBackground: '#FFF3D9',
     border: '#E5E7EB',
   };
-  const statusColors = task?.status === 'Concluída'
+  const statusColors = status === 'Concluída'
     ? { text: colors.success, background: colors.successBackground }
-    : task?.status === 'A fazer'
+    : status === 'Pendente'
       ? { text: colors.warning, background: colors.warningBackground }
       : { text: colors.accent, background: colors.accentBackground };
   function handleGoBack() {
@@ -116,11 +136,44 @@ export default function DetailsScreen() {
                   <Text style={[styles.text, styles.fieldLabel]}>
                     STATUS
                   </Text>
-                  <View style={[styles.statusBadge, { backgroundColor: statusColors.background }]}>
-                    <View style={[styles.statusDot, { backgroundColor: statusColors.text }]} />
-                    <Text style={[styles.text, styles.smallBold]}>
-                      {task.status}
-                    </Text>
+                  <View style={styles.statusPicker}>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`Status: ${status}`}
+                      accessibilityState={{ expanded: isStatusMenuOpen }}
+                      onPress={() => setIsStatusMenuOpen((isOpen) => !isOpen)}
+                      style={({ pressed }) => [
+                        styles.statusSelectButton,
+                        { backgroundColor: statusColors.background },
+                        pressed && styles.pressed,
+                      ]}>
+                      <View style={styles.statusSelectValue}>
+                        <View style={[styles.statusDot, { backgroundColor: statusColors.text }]} />
+                        <Text style={[styles.text, styles.statusSelectText]}>{status}</Text>
+                      </View>
+                      <View style={styles.statusChevron} />
+                    </Pressable>
+                    {isStatusMenuOpen && (
+                      <View style={styles.statusMenu}>
+                        {statusOptions.map((option) => (
+                          <Pressable
+                            key={option}
+                            accessibilityRole="button"
+                            accessibilityState={{ selected: status === option }}
+                            onPress={() => {
+                              setStatus(option);
+                              setIsStatusMenuOpen(false);
+                            }}
+                            style={({ pressed }) => [
+                              styles.statusOption,
+                              status === option && styles.selectedStatusOption,
+                              pressed && styles.pressed,
+                            ]}>
+                            <Text style={[styles.text, styles.statusOptionText]}>{option}</Text>
+                          </Pressable>
+                        ))}
+                      </View>
+                    )}
                   </View>
                 </View>
 
@@ -128,7 +181,7 @@ export default function DetailsScreen() {
                   <Text style={[styles.text, styles.fieldLabel]}>
                     PRIORIDADE
                   </Text>
-                  <View style={[styles.statusBadge, { backgroundColor: colors.warningBackground }]}>
+                  <View style={[styles.priorityBadge, { backgroundColor: colors.warningBackground }]}>
                     <Text style={[styles.text, styles.smallBold]}>
                       {task.priority}
                     </Text>
@@ -172,7 +225,7 @@ export default function DetailsScreen() {
 
 const styles = StyleSheet.create({
   whiteBackground: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F5F7FB',
   },
   text: {
     color: '#000000',
@@ -198,7 +251,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.four,
+    paddingTop: Spacing.three,
+    paddingBottom: 32,
   },
   content: {
     width: '100%',
@@ -224,7 +278,7 @@ const styles = StyleSheet.create({
   },
   pageHeading: {
     gap: Spacing.one,
-    marginBottom: Spacing.two,
+    marginBottom: Spacing.one,
   },
   eyebrow: {
     fontSize: 12,
@@ -238,9 +292,14 @@ const styles = StyleSheet.create({
   },
   taskCard: {
     borderWidth: 1,
-    borderRadius: 24,
-    padding: Spacing.four,
+    borderRadius: 20,
+    padding: 20,
     gap: Spacing.three,
+    shadowColor: '#111827',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 2,
   },
   cardTopRow: {
     flexDirection: 'row',
@@ -273,18 +332,69 @@ const styles = StyleSheet.create({
   },
   infoItem: {
     gap: Spacing.two,
-    minWidth: 140,
+    minWidth: 150,
   },
   fieldLabel: {
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 0.8,
   },
-  statusBadge: {
-    alignSelf: 'flex-start',
+  statusPicker: {
+    width: '100%',
+    gap: Spacing.one,
+  },
+  statusSelectButton: {
+    minHeight: 50,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Spacing.two,
+    borderRadius: 12,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: 10,
+  },
+  statusSelectText: {
+    fontSize: 15,
+    lineHeight: 22,
+    fontWeight: '700',
+  },
+  statusSelectValue: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.two,
+  },
+  statusChevron: {
+    width: 8,
+    height: 8,
+    borderRightWidth: 2,
+    borderBottomWidth: 2,
+    borderColor: '#111827',
+    transform: [{ rotate: '45deg' }],
+  },
+  statusMenu: {
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    padding: Spacing.one,
+  },
+  statusOption: {
+    minHeight: 44,
+    justifyContent: 'center',
+    borderRadius: 8,
+    paddingHorizontal: Spacing.two,
+    paddingVertical: Spacing.two,
+  },
+  statusOptionText: {
+    fontSize: 15,
+    lineHeight: 22,
+    fontWeight: '500',
+  },
+  selectedStatusOption: {
+    backgroundColor: '#F1F5F9',
+  },
+  priorityBadge: {
+    alignSelf: 'flex-start',
     borderRadius: 20,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.one,
@@ -303,8 +413,8 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     flexBasis: 240,
     borderWidth: 1,
-    borderRadius: 20,
-    padding: Spacing.three,
+    borderRadius: 16,
+    padding: Spacing.four,
     gap: Spacing.three,
   },
   assigneeRow: {
