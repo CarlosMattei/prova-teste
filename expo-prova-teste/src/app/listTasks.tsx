@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from "react-native";
 
@@ -55,8 +56,10 @@ export default function ListTasks() {
             title={item.title}
             description={item.description}
             onPress={() => {
-              // Futuramente navegará para a página de detalhes da tarefa
-              console.log("Tarefa selecionada:", item);
+              router.push({
+                pathname: "/detailsScreen",
+                params: { id: item.id != null ? String(item.id) : undefined },
+              });
             }}
           />
         )}
