@@ -1,11 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-import { MaxContentWidth, Spacing } from '@/constants/theme';
-// TODO (Integração Backend): Substituir a importação de `mockTasks` pela função de busca por ID do service (ex: `fetchTaskById` de `@/services/taskService`) e pelo tipo `Task` de `@/models/tasks`.
-import { mockTasks } from '@/data/mockTasks';
 
 const Spacing = {
   one: 4,
@@ -16,25 +12,131 @@ const Spacing = {
 
 const MaxContentWidth = 720;
 const statusOptions = ['Pendente', 'Em andamento', 'Concluída'] as const;
-type TaskStatus = (typeof statusOptions)[number];
+type Task = {
+  id: number;
+  title: string;
+  description: string;
+  responsible: string;
+  status: string;
+  priority: string;
+};
+
+const API_URL = process.env.EXPO_PUBLIC_API_URL
+  ?? Platform.select({
+    android: 'http://10.0.2.2:8080',
+    default: 'http://localhost:8080',
+  })
+  ?? 'http://localhost:8080';
+
+function formatStatus(status: string): string {
+  switch (status.trim().toUpperCase()) {
+    case 'PENDENTE':
+      return 'Pendente';
+    case 'EM ANDAMENTO':
+      return 'Em andamento';
+    case 'CONCLUIDA':
+    case 'CONCLUÍDA':
+      return 'Concluída';
+    default:
+      return status;
+  }
+}
+
+function toApiStatus(status: string): string {
+  switch (status) {
+    case 'Pendente':
+      return 'PENDENTE';
+    case 'Em andamento':
+      return 'EM ANDAMENTO';
+    case 'Concluída':
+      return 'CONCLUIDA';
+    default:
+      return status;
+  }
+}
+
+function formatPriority(priority: string): string {
+  switch (priority.trim().toUpperCase()) {
+    case 'ALTA':
+      return 'Alta';
+    case 'MEDIA':
+    case 'MÉDIA':
+      return 'Média';
+    case 'BAIXA':
+      return 'Baixa';
+    default:
+      return priority;
+  }
+}
+
+function getInitials(name: string): string {
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0] ?? '')
+    .join('')
+    .toUpperCase();
+}
 
 export default function DetailsScreen() {
   // O `id` já é recebido via parâmetro de rota quando o usuário clica em um card na tela `listTasks`.
   const { id } = useLocalSearchParams<{ id?: string }>();
+  const taskId = id ?? '1';
+  const [task, setTask] = useState<Task | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [status, setStatus] = useState('Pendente');
+  const [isStatusMenuOpen, setIsStatusMenuOpen] = useState(false);
+  const [isSavingStatus, setIsSavingStatus] = useState(false);
+  const [statusError, setStatusError] = useState<string | null>(null);
+  useEffect(() => {
+    const controller = new AbortController();
 
-  // TODO (Integração Backend):
-  // 1. Atualmente busca no `mockTasks` (cujos IDs são 'T-2048', 'T-2049', etc.). Como o `id` vindo de `listTasks` vem do backend (ex: '1', '2'), o `.find()` abaixo retorna `undefined` e exibe "Tarefa não encontrada".
-  // 2. Para testar apenas o layout com mock enquanto não integra, pode-se usar: `mockTasks.find((item) => item.id === id) ?? mockTasks[0]`.
-  // 3. Para integrar com o backend Java, substituir a linha abaixo por `useState<Task | null>(null)` + `useEffect` buscando os detalhes da tarefa pelo `id` na API (ex: `GET http://localhost:8080/tasks/${id}`).
-  const task = mockTasks.find((item) => item.id === (id ?? mockTasks[0].id));
-  const [status, setStatus] = useState<TaskStatus>(() => {
-    if (task?.status === 'Em andamento' || task?.status === 'Concluída') {
-      return task.status;
+    async function loadTask() {
+      setIsLoading(true);
+      setTask(null);
+      setErrorMessage(null);
+
+      try {
+        const response = await fetch(
+          `${API_URL}/tasks/${encodeURIComponent(taskId)}`,
+          { signal: controller.signal }
+        );
+
+        if (response.status === 404) {
+          setIsLoading(false);
+          return;
+        }
+
+        if (!response.ok) {
+          throw new Error(`O servidor respondeu com o status ${response.status}.`);
+        }
+
+        const loadedTask: Task = await response.json();
+        setTask(loadedTask);
+        setStatus(formatStatus(loadedTask.status));
+      } catch (error) {
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : 'Não foi possível carregar a tarefa.'
+        );
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
+      }
     }
 
-    return 'Pendente';
-  });
-  const [isStatusMenuOpen, setIsStatusMenuOpen] = useState(false);
+    void loadTask();
+    return () => controller.abort();
+  }, [taskId]);
+
   const colors = {
     accent: '#315FCE',
     accentBackground: '#EAF0FF',
@@ -56,6 +158,69 @@ export default function DetailsScreen() {
     }
 
     router.replace('/listTasks');
+  }
+
+  async function handleStatusChange(nextStatus: string) {
+    setIsStatusMenuOpen(false);
+    setStatusError(null);
+    if (nextStatus === status) {
+      return;
+    }
+
+    setIsSavingStatus(true);
+    try {
+      const response = await fetch(
+        `${API_URL}/tasks/${encodeURIComponent(taskId)}/status`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: toApiStatus(nextStatus) }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`O servidor respondeu com o status ${response.status}.`);
+      }
+
+      const updatedTask: Task = await response.json();
+      setTask(updatedTask);
+      setStatus(formatStatus(updatedTask.status));
+    } catch (error) {
+      setStatusError(
+        error instanceof Error
+          ? error.message
+          : 'Não foi possível salvar o status da tarefa.'
+      );
+    } finally {
+      setIsSavingStatus(false);
+    }
+  }
+
+  if (isLoading || errorMessage) {
+    return (
+      <View style={[styles.container, styles.whiteBackground]}>
+        <SafeAreaView style={styles.safeArea}>
+          <View style={[styles.content, styles.notFoundContent]}>
+            <Text style={[styles.text, styles.pageTitle]}>
+              {isLoading ? 'Carregando tarefa...' : 'Erro ao carregar tarefa'}
+            </Text>
+            {errorMessage && <Text style={styles.text}>{errorMessage}</Text>}
+            <Pressable
+              accessibilityRole="button"
+              onPress={handleGoBack}
+              style={({ pressed }) => [
+                styles.returnButton,
+                { backgroundColor: colors.accentBackground },
+                pressed && styles.pressed,
+              ]}>
+              <Text style={[styles.text, styles.smallBold, styles.returnButtonText]}>
+                Voltar para tarefas
+              </Text>
+            </Pressable>
+          </View>
+        </SafeAreaView>
+      </View>
+    );
   }
 
   if (!task) {
@@ -117,11 +282,6 @@ export default function DetailsScreen() {
                 <Text style={[styles.text, styles.eyebrow]}>
                   TAREFA {task.id}
                 </Text>
-                <View style={[styles.categoryBadge, { backgroundColor: colors.accentBackground }]}>
-                  <Text style={[styles.text, styles.smallBold]}>
-                    {task.category}
-                  </Text>
-                </View>
               </View>
 
               <Text style={[styles.text, styles.taskTitle]}>{task.title}</Text>
@@ -140,7 +300,11 @@ export default function DetailsScreen() {
                     <Pressable
                       accessibilityRole="button"
                       accessibilityLabel={`Status: ${status}`}
-                      accessibilityState={{ expanded: isStatusMenuOpen }}
+                      accessibilityState={{
+                        expanded: isStatusMenuOpen,
+                        disabled: isSavingStatus,
+                      }}
+                      disabled={isSavingStatus}
                       onPress={() => setIsStatusMenuOpen((isOpen) => !isOpen)}
                       style={({ pressed }) => [
                         styles.statusSelectButton,
@@ -149,7 +313,12 @@ export default function DetailsScreen() {
                       ]}>
                       <View style={styles.statusSelectValue}>
                         <View style={[styles.statusDot, { backgroundColor: statusColors.text }]} />
-                        <Text style={[styles.text, styles.statusSelectText]}>{status}</Text>
+                        <Text
+                          numberOfLines={1}
+                          ellipsizeMode="tail"
+                          style={[styles.text, styles.statusSelectText]}>
+                          {status}
+                        </Text>
                       </View>
                       <View style={styles.statusChevron} />
                     </Pressable>
@@ -159,11 +328,12 @@ export default function DetailsScreen() {
                           <Pressable
                             key={option}
                             accessibilityRole="button"
-                            accessibilityState={{ selected: status === option }}
-                            onPress={() => {
-                              setStatus(option);
-                              setIsStatusMenuOpen(false);
+                            accessibilityState={{
+                              selected: status === option,
+                              disabled: isSavingStatus,
                             }}
+                            disabled={isSavingStatus}
+                            onPress={() => void handleStatusChange(option)}
                             style={({ pressed }) => [
                               styles.statusOption,
                               status === option && styles.selectedStatusOption,
@@ -175,6 +345,11 @@ export default function DetailsScreen() {
                       </View>
                     )}
                   </View>
+                  {(isSavingStatus || statusError) && (
+                    <Text style={[styles.text, styles.statusMessage]}>
+                      {isSavingStatus ? 'Salvando status...' : statusError}
+                    </Text>
+                  )}
                 </View>
 
                 <View style={styles.infoItem}>
@@ -183,7 +358,7 @@ export default function DetailsScreen() {
                   </Text>
                   <View style={[styles.priorityBadge, { backgroundColor: colors.warningBackground }]}>
                     <Text style={[styles.text, styles.smallBold]}>
-                      {task.priority}
+                      {formatPriority(task.priority)}
                     </Text>
                   </View>
                 </View>
@@ -202,14 +377,11 @@ export default function DetailsScreen() {
                 <View style={styles.assigneeRow}>
                   <View style={[styles.avatar, { backgroundColor: colors.accentBackground }]}>
                     <Text style={[styles.text, styles.smallBold]}>
-                      {task.initials}
+                      {getInitials(task.responsible)}
                     </Text>
                   </View>
                   <View style={styles.assigneeInfo}>
-                    <Text style={[styles.text, styles.smallBold]}>{task.assignee}</Text>
-                    <Text style={[styles.text, styles.small]}>
-                      {task.role}
-                    </Text>
+                    <Text style={[styles.text, styles.smallBold]}>{task.responsible}</Text>
                   </View>
                 </View>
               </View>
@@ -307,10 +479,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: Spacing.two,
   },
-  categoryBadge: {
-    borderRadius: 20,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.one,
+  statusMessage: {
+    fontSize: 12,
+    lineHeight: 18,
+    color: '#B42318',
   },
   taskTitle: {
     fontSize: 24,
@@ -340,11 +512,12 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
   },
   statusPicker: {
-    width: '100%',
+    width: 184,
     gap: Spacing.one,
   },
   statusSelectButton: {
-    minHeight: 50,
+    width: 184,
+    height: 46,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -354,11 +527,13 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   statusSelectText: {
+    flexShrink: 1,
     fontSize: 15,
     lineHeight: 22,
     fontWeight: '700',
   },
   statusSelectValue: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.two,

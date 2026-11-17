@@ -1,69 +1,88 @@
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from "react-native";
+import { FlatList, Platform, StyleSheet, Text, View } from "react-native";
 
 import { ListCard } from "@/components/listCard";
-import { Task } from "@/models/tasks";
-import { fetchTasks } from "@/services/taskService";
+
+type Task = {
+  id: number;
+  title: string;
+  description: string;
+};
+
+const API_URL = process.env.EXPO_PUBLIC_API_URL
+  ?? Platform.select({
+    android: "http://10.0.2.2:8080",
+    default: "http://localhost:8080",
+  })
+  ?? "http://localhost:8080";
 
 export default function ListTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     async function loadTasks() {
       try {
-        const data = await fetchTasks();
-        setTasks(data);
-      } catch {
-        setError("Não foi possível carregar as tarefas.");
+        const response = await fetch(`${API_URL}/tasks`, {
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error(`O servidor respondeu com o status ${response.status}.`);
+        }
+
+        const loadedTasks: Task[] = await response.json();
+        setTasks(loadedTasks);
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          setErrorMessage(
+            error instanceof Error
+              ? error.message
+              : "Não foi possível carregar as tarefas."
+          );
+        }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
       }
     }
 
-    loadTasks();
+    void loadTasks();
+    return () => controller.abort();
   }, []);
-
-  if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#007AFF" />
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.errorText}>{error}</Text>
-      </View>
-    );
-  }
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Lista de Tarefas</Text>
 
-      <FlatList
-        data={tasks}
-        keyExtractor={(item, index) => String(item.id ?? index)}
-        contentContainerStyle={styles.listContent}
-        ListEmptyComponent={<Text style={styles.emptyText}>Nenhuma tarefa encontrada.</Text>}
-        renderItem={({ item }) => (
-          <ListCard
-            title={item.title}
-            description={item.description}
-            onPress={() => {
-              router.push({
-                pathname: "/detailsScreen",
-                params: { id: item.id != null ? String(item.id) : undefined },
-              });
-            }}
-          />
-        )}
-      />
+      {errorMessage ? (
+        <Text style={styles.message}>{errorMessage}</Text>
+      ) : isLoading ? (
+        <Text style={styles.message}>Carregando tarefas...</Text>
+      ) : (
+        <FlatList
+          data={tasks}
+          keyExtractor={(item) => String(item.id)}
+          contentContainerStyle={styles.listContent}
+          renderItem={({ item }) => (
+            <ListCard
+              title={item.title}
+              description={item.description}
+              onPress={() =>
+                router.push({
+                  pathname: "/detailsScreen",
+                  params: { id: String(item.id) },
+                })
+              }
+            />
+          )}
+        />
+      )}
     </View>
   );
 }
@@ -86,6 +105,10 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#111827",
     marginBottom: 16,
+  },
+  message: {
+    fontSize: 14,
+    color: "#4B5563",
   },
   listContent: {
     gap: 12,
