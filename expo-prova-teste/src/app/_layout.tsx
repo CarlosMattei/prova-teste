@@ -7,7 +7,7 @@ const getClientHydrationSnapshot = () => true;
 const getServerHydrationSnapshot = () => false;
 
 export const unstable_settings = {
-  initialRouteName: 'listTasks',
+  initialRouteName: 'index',
 };
 
 export default function RootLayout() {
@@ -22,6 +22,7 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={useDarkTheme ? DarkTheme : DefaultTheme}>
       <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
         <Stack.Screen name="listTasks" />
         <Stack.Screen name="detailsScreen" />
       </Stack>
