@@ -2,12 +2,14 @@ package com.fatec.itu.prova_teste.services;
 
 import java.util.List;
 
-import org.aspectj.weaver.ast.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.fatec.itu.prova_teste.dtos.TaskRequest;
 import com.fatec.itu.prova_teste.dtos.TaskResponse;
+import com.fatec.itu.prova_teste.dtos.TaskStatusRequest;
 import com.fatec.itu.prova_teste.entities.Task;
 import com.fatec.itu.prova_teste.mappers.TaskMapper;
 import com.fatec.itu.prova_teste.repositories.TaskRepository;
@@ -39,4 +41,18 @@ public class TaskService {
         Task t = repository.save(TaskMapper.toEntity(task));
          return TaskMapper.toDTO(t);
     }
+
+    public TaskResponse updateStatus(Long id, TaskStatusRequest request) {
+    Task task = repository.findById(id)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND,
+            "Tarefa não encontrada"
+        ));
+
+    task.setStatus(request.status());
+
+    Task updatedTask = repository.save(task);
+
+    return TaskMapper.toDTO(updatedTask);
+}
 }
