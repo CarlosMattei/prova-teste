@@ -4,7 +4,10 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.fatec.itu.prova_teste.dtos.TaskRequest;
@@ -43,16 +46,21 @@ public class TaskService {
     }
 
     public TaskResponse updateStatus(Long id, TaskStatusRequest request) {
-    Task task = repository.findById(id)
+      Task task = repository.findById(id)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND,
             "Tarefa não encontrada"
         ));
 
-    task.setStatus(request.status());
+      task.setStatus(request.status());
+      Task updatedTask = repository.save(task);
+      return TaskMapper.toDTO(updatedTask);
+    }
 
-    Task updatedTask = repository.save(task);
-
-    return TaskMapper.toDTO(updatedTask);
-}
+     public void deleteById(long id) {
+      if(repository.existsById(id))
+            repository.deleteById(id);
+        else
+           throw new EntityNotFoundException("Tarefa não cadastrada");
+    }
 }

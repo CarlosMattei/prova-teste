@@ -62,4 +62,11 @@ public class TaskController {
             @Valid @RequestBody TaskStatusRequest request) {
         return ResponseEntity.ok(service.updateStatus(id, request));
     }
+
+    
+    @DeleteMapping("{id}")
+    public ResponseEntity<Void> deleteById(@PathVariable long id) {
+        service.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
 }
