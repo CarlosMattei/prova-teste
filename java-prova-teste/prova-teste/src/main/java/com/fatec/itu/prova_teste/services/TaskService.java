@@ -10,6 +10,7 @@ import com.fatec.itu.prova_teste.repositories.TaskRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 
+
 @Service 
 public class TaskService {
       @Autowired
@@ -23,4 +24,9 @@ public class TaskService {
                        .toList();
     }
 
+    public TaskResponse findById(Long id) {
+    return repository.findById(id) // Devolve UM OBJETO PRODUTO
+                         .map(TaskMapper::toDTO)
+                         .orElseThrow(() -> new EntityNotFoundException()); // trata exceção/erro
+    }
 }
