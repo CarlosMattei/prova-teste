@@ -1,0 +1,161 @@
+<div class="modal-backdrop show" aria-hidden="true" (click)="close()"></div>
+
+<div
+  #dialog
+  class="modal d-block"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="create-task-title"
+  tabindex="-1"
+  (keydown)="trapFocus($event)"
+  (click)="close()"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <header class="modal-header align-items-start">
+        <div>
+          <h2 class="modal-title fs-5" id="create-task-title">
+            {{ task() ? 'Edit task' : 'Add task' }}
+          </h2>
+          <p class="modal-intro">Fill in the task details. Fields marked * are required.</p>
+        </div>
+        <button
+          type="button"
+          class="btn-close"
+          aria-label="Close"
+          [disabled]="saving()"
+          (click)="close()"
+        ></button>
+      </header>
+
+      <form id="create-task-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <div class="modal-body">
+          @if (error()) {
+            <div class="alert alert-danger py-2" role="alert">{{ error() }}</div>
+          }
+
+          <div class="field">
+            <label class="form-label" for="task-title">
+              Título <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input
+              #titleInput
+              id="task-title"
+              type="text"
+              class="form-control"
+              formControlName="title"
+              maxlength="120"
+              autocomplete="off"
+              [class.is-invalid]="form.controls.title.touched && form.controls.title.invalid"
+            />
+            @if (form.controls.title.touched && form.controls.title.invalid) {
+              <p class="invalid-feedback d-block">Enter a title for the task.</p>
+            }
+          </div>
+
+          <div class="field">
+            <label class="form-label" for="task-description">Descrição</label>
+            <textarea
+              id="task-description"
+              class="form-control"
+              rows="3"
+              formControlName="description"
+              maxlength="500"
+            ></textarea>
+          </div>
+
+          <div class="field">
+            <label class="form-label" for="task-responsible">
+              Responsável <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input
+              id="task-responsible"
+              type="text"
+              class="form-control"
+              formControlName="responsible"
+              list="responsible-options"
+              maxlength="80"
+              autocomplete="off"
+              placeholder="Search or type a name"
+              [class.is-invalid]="form.controls.responsible.touched && form.controls.responsible.invalid"
+            />
+            <datalist id="responsible-options">
+              @for (responsible of responsibles(); track responsible) {
+                <option [value]="responsible"></option>
+              }
+            </datalist>
+            @if (form.controls.responsible.touched && form.controls.responsible.invalid) {
+              <p class="invalid-feedback d-block">Enter the person responsible for the task.</p>
+            }
+          </div>
+
+          <div class="field-grid">
+            <div class="field">
+              <label class="form-label" for="task-status">
+                Status <span class="required" aria-hidden="true">*</span>              </label>
+              <select
+                id="task-status"
+                class="form-select"
+                formControlName="status"
+                [class.is-invalid]="form.controls.status.touched && form.controls.status.invalid"
+              >
+                <option value="">Select a status</option>
+                @for (option of statusOptions; track option.value) {
+                  <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+              @if (form.controls.status.touched && form.controls.status.invalid) {
+                <p class="invalid-feedback d-block">Choose a status.</p>
+              }
+            </div>
+
+            <div class="field">
+              <label class="form-label" for="task-priority">
+                Priority <span class="required" aria-hidden="true">*</span>
+              </label>
+              <select
+                id="task-priority"
+                class="form-select"
+                formControlName="priority"
+                [class.is-invalid]="form.controls.priority.touched && form.controls.priority.invalid"
+              >
+                <option value="">Select a priority</option>
+                @for (option of priorityOptions; track option.value) {
+                  <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+              @if (form.controls.priority.touched && form.controls.priority.invalid) {
+                <p class="invalid-feedback d-block">Choose a priority.</p>
+              }
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <footer class="modal-footer">
+        <p class="modal-hint" id="create-task-hint">
+          Fill in all required fields to enable saving.
+        </p>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline-secondary" [disabled]="saving()" (click)="close()">
+            Cancel
+          </button>
+          <button
+            type="submit"
+            form="create-task-form"
+            class="btn btn-primary"
+            aria-describedby="create-task-hint"
+            [disabled]="!canSubmit() || saving()"
+          >
+            @if (saving()) {
+              <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+              Saving...
+            } @else {
+              {{ task() ? 'Save changes' : 'Add task' }}
+            }
+          </button>
+        </div>
+      </footer>
+    </div>
+  </div>
+</div>

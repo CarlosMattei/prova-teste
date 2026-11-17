@@ -12,6 +12,24 @@ ng serve
 
 Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
 
+## Backend API
+
+Task data comes from the Java Spring Boot API (`java-prova-teste/prova-teste`). Start it first:
+
+```bash
+cd ../../java-prova-teste/prova-teste
+./mvnw spring-boot:run
+```
+
+It listens on `http://localhost:8080` and exposes the full task CRUD: `GET /tasks`,
+`GET /tasks/{id}`, `POST /tasks`, `PUT /tasks/{id}`, `PATCH /tasks/{id}/status` and
+`DELETE /tasks/{id}`. The development server proxies requests under `/api` to it
+(`/api/tasks` → `/tasks`), so open `http://localhost:4200/` and the list is loaded from the API.
+
+The UI uses every route: the header button creates tasks (`POST`), the pencil icon edits them
+(`PUT`), the trash icon deletes them (`DELETE`) and the status selector in the details panel
+changes only the status (`PATCH /tasks/{id}/status`).
+
 ## Code scaffolding
 
 Angular CLI includes powerful code scaffolding tools. To generate a new component, run:

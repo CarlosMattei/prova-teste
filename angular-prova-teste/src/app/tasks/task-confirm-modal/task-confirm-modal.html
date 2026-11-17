@@ -1,0 +1,57 @@
+<div class="modal-backdrop show" aria-hidden="true" (click)="close()"></div>
+
+<div
+  #dialog
+  class="modal d-block"
+  role="alertdialog"
+  aria-modal="true"
+  aria-labelledby="delete-task-title"
+  aria-describedby="delete-task-message"
+  tabindex="-1"
+  (keydown)="trapFocus($event)"
+  (click)="close()"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <header class="modal-header">
+        <h2 class="modal-title fs-5" id="delete-task-title">Delete task</h2>
+        <button
+          type="button"
+          class="btn-close"
+          aria-label="Close"
+          [disabled]="deleting()"
+          (click)="close()"
+        ></button>
+      </header>
+
+      <div class="modal-body">
+        @if (error()) {
+          <div class="alert alert-danger py-2" role="alert">{{ error() }}</div>
+        }
+        <p id="delete-task-message" class="mb-0">
+          Are you sure you want to delete <strong>{{ task().title }}</strong>? This cannot be undone.
+        </p>
+      </div>
+
+      <footer class="modal-footer">
+        <button
+          #cancelButton
+          type="button"
+          class="btn btn-outline-secondary"
+          [disabled]="deleting()"
+          (click)="close()"
+        >
+          Cancel
+        </button>
+        <button type="button" class="btn btn-danger" [disabled]="deleting()" (click)="confirm()">
+          @if (deleting()) {
+            <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+            Deleting...
+          } @else {
+            Delete
+          }
+        </button>
+      </footer>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,59 @@
+@let item = task();
+
+@if (item) {
+  <article class="detail-card">
+    <header class="detail-header">
+      <span class="identifier">Task #{{ item.id }}</span>
+      <h2>{{ item.title }}</h2>
+      <div class="badges">
+        <span class="badge text-bg-{{ taskStatus[item.status].badge }}">
+          {{ taskStatus[item.status].label }}
+        </span>
+        <span class="badge text-bg-{{ taskPriority[item.priority].badge }}">
+          {{ taskPriority[item.priority].label }} priority
+        </span>
+      </div>
+    </header>
+
+    <section class="block">
+      <h3>Description</h3>
+      <p class="description">{{ item.description }}</p>
+    </section>
+
+    <dl class="metadata">
+      <dt>Responsável</dt>
+      <dd>{{ item.responsible }}</dd>
+      <dt>Prioridade</dt>
+      <dd>{{ taskPriority[item.priority].label }}</dd>
+      <dt>Status</dt>
+      <dd>
+        <label class="visually-hidden" for="task-status-select">Alterar status</label>
+        <select
+          id="task-status-select"
+          class="form-select form-select-sm status-select"
+          [value]="item.status"
+          [disabled]="saving()"
+          (change)="changeStatus($event)"
+        >
+          @for (option of statusOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+        @if (saving()) {
+          <span class="status-hint" role="status">
+            <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+            Salvando...
+          </span>
+        }
+      </dd>
+    </dl>
+
+    @if (error()) {
+      <div class="alert alert-danger py-2 mt-3 mb-0" role="alert">{{ error() }}</div>
+    }
+  </article>
+} @else {
+  <div class="empty-detail">
+    <p>Select a task from the list to view its details.</p>
+  </div>
+}
