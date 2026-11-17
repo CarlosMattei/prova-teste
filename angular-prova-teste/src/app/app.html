@@ -17,16 +17,36 @@
   <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
 </svg> Add task
       </button>
-      <button
-        type="button"
-        class="btn btn-outline-primary"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-filter" viewBox="0 0 16 16">
+      <div class="dropdown">
+        <button
+          type="button"
+          class="btn btn-outline-primary"
+          aria-haspopup="true"
+          [attr.aria-expanded]="filterOpen()"
+          (click)="$event.stopPropagation(); filterOpen.set(!filterOpen())"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-filter" viewBox="0 0 16 16">
   <path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5m-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5"/>
-</svg>  
-        Filter
-      </button>
-
+</svg>
+          Filter
+        </button>
+        @if (filterOpen()) {
+          <ul class="dropdown-menu dropdown-menu-end show">
+            @for (option of filterOptions; track option.value) {
+              <li>
+                <button
+                  type="button"
+                  class="dropdown-item"
+                  [class.active]="filter() === option.value"
+                  (click)="setFilter(option.value)"
+                >
+                  {{ option.label }}
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </div>
     </div>
   </header>
 
@@ -46,14 +66,18 @@
         </div>
       } @else if (list.length === 0) {
         <p class="state">No tasks found.</p>
+      } @else if (visibleTasks().length === 0) {
+        <p class="state">Nenhuma tarefa encontrada como {{ filterLabel() }}</p>
       } @else {
         <ul class="task-list">
-          @for (task of list; track task.id) {
+          @for (task of visibleTasks(); track task.id) {
             <li>
               <app-task-card
                 [task]="task"
                 [selected]="selectedTask()?.id === task.id"
                 (select)="selectTask($event)"
+                (edit)="openEditModal($event)"
+                (remove)="deletingTask.set($event)"
               />
             </li>
           }
@@ -67,10 +91,19 @@
   </main>
 </div>
 
-@if (createModalOpen()) {
+@if (createModalOpen() || editingTask()) {
   <app-task-create-modal
+    [task]="editingTask()"
     [assignees]="assignees()"
-    (created)="onTaskCreated($event)"
-    (closed)="closeCreateModal()"
+    (saved)="onTaskSaved($event)"
+    (closed)="closeModal()"
+  />
+}
+
+@if (deletingTask(); as task) {
+  <app-task-confirm-modal
+    [task]="task"
+    (deleted)="onTaskDeleted()"
+    (closed)="deletingTask.set(null)"
   />
 }

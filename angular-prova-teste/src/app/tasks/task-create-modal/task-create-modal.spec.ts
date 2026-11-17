@@ -61,7 +61,7 @@ describe('TaskCreateModal', () => {
 
   it('should post the task and emit it when the form is valid', async () => {
     const created: Task[] = [];
-    fixture.componentInstance.created.subscribe((task) => created.push(task));
+    fixture.componentInstance.saved.subscribe((task) => created.push(task));
 
     fill('#task-title', '  Write integration tests  ');
     fill('#task-assignee', ' Ana Souza ');

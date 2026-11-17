@@ -10,6 +10,8 @@ export class TaskCard {
   readonly task = input.required<Task>();
   readonly selected = input(false);
   readonly select = output<Task>();
+  readonly edit = output<Task>();
+  readonly remove = output<Task>();
 
   protected readonly taskStatus = TASK_STATUS;
   protected readonly taskPriority = TASK_PRIORITY;
