@@ -1,50 +1,88 @@
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import { router } from "expo-router";
+import { useEffect, useState } from "react";
+import { FlatList, Platform, StyleSheet, Text, View } from "react-native";
 
 import { ListCard } from "@/components/listCard";
 
-const TASKS = [
-  {
-    id: "1",
-    title: "Configurar navegação Stack",
-    description: "Conectar a tela inicial com a lista de tarefas usando Expo Router.",
-  },
-  {
-    id: "2",
-    title: "Criar componente ListCard",
-    description: "Exibir título e descrição em um card simples e reutilizável.",
-  },
-  {
-    id: "3",
-    title: "Testar no dispositivo",
-    description: "Validar o layout e a rolagem da lista no Android, iOS e Web.",
-  },
-    {
-    id: "4",
-    title: "Testar no dispositivo",
-    description: "Validar o layout e a rolagem da lista no Android, iOS e Web.",
-  },
-];
+type Task = {
+  id: number;
+  title: string;
+  description: string;
+};
+
+const API_URL = process.env.EXPO_PUBLIC_API_URL
+  ?? Platform.select({
+    android: "http://10.0.2.2:8080",
+    default: "http://localhost:8080",
+  })
+  ?? "http://localhost:8080";
 
 export default function ListTasks() {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadTasks() {
+      try {
+        const response = await fetch(`${API_URL}/tasks`, {
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error(`O servidor respondeu com o status ${response.status}.`);
+        }
+
+        const loadedTasks: Task[] = await response.json();
+        setTasks(loadedTasks);
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          setErrorMessage(
+            error instanceof Error
+              ? error.message
+              : "Não foi possível carregar as tarefas."
+          );
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadTasks();
+    return () => controller.abort();
+  }, []);
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Lista de Tarefas</Text>
 
-      <FlatList
-        data={TASKS}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
-        renderItem={({ item }) => (
-          <ListCard
-            title={item.title}
-            description={item.description}
-            onPress={() => {
-              // Futuramente navegará para a página de detalhes da tarefa
-              console.log("Tarefa selecionada:", item.id);
-            }}
-          />
-        )}
-      />
+      {errorMessage ? (
+        <Text style={styles.message}>{errorMessage}</Text>
+      ) : isLoading ? (
+        <Text style={styles.message}>Carregando tarefas...</Text>
+      ) : (
+        <FlatList
+          data={tasks}
+          keyExtractor={(item) => String(item.id)}
+          contentContainerStyle={styles.listContent}
+          renderItem={({ item }) => (
+            <ListCard
+              title={item.title}
+              description={item.description}
+              onPress={() =>
+                router.push({
+                  pathname: "/detailsScreen",
+                  params: { id: String(item.id) },
+                })
+              }
+            />
+          )}
+        />
+      )}
     </View>
   );
 }
@@ -60,6 +98,10 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#111827",
     marginBottom: 16,
+  },
+  message: {
+    fontSize: 14,
+    color: "#4B5563",
   },
   listContent: {
     gap: 12,

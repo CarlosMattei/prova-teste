@@ -29,4 +29,11 @@ public class TaskService {
                          .map(TaskMapper::toDTO)
                          .orElseThrow(() -> new EntityNotFoundException()); // trata exceção/erro
     }
+
+    public TaskResponse updateStatus(Long id, String status) {
+      var task = repository.findById(id)
+                           .orElseThrow(() -> new EntityNotFoundException());
+      task.setStatus(status);
+      return TaskMapper.toDTO(repository.save(task));
+    }
 }
