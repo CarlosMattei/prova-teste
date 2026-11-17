@@ -12,15 +12,23 @@ ng serve
 
 Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
 
-## Mock API
+## Backend API
 
-Task data is served from `db.json` by `json-server`. Run it in a separate terminal:
+Task data comes from the Java Spring Boot API (`java-prova-teste/prova-teste`). Start it first:
 
 ```bash
-npm run api
+cd ../../java-prova-teste/prova-teste
+./mvnw spring-boot:run
 ```
 
-The development server proxies requests under `/api` to `http://localhost:3000` (see `proxy.conf.json`).
+It listens on `http://localhost:8080` and exposes `GET /tasks`, `GET /tasks/{id}` and `POST /tasks`.
+The development server proxies requests under `/api` to it (`/api/tasks` → `/tasks`), so open
+`http://localhost:4200/` and the list is loaded from the API.
+
+Editing and deleting are already implemented in `tasks.service.ts`, but the API does not expose
+`PUT /tasks/{id}` or `DELETE /tasks/{id}` yet, so those buttons stay disabled. When the backend
+adds the routes, set `TASK_EDIT_AVAILABLE` and `TASK_DELETE_AVAILABLE` to `true` in
+`src/app/tasks/tasks.service.ts`.
 
 ## Code scaffolding
 

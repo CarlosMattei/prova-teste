@@ -42,8 +42,8 @@ export class TaskCreateModal implements OnInit, OnDestroy {
   /** The task being edited; when omitted the modal creates a new one. */
   readonly task = input<Task | null>(null);
 
-  /** Assignees already used by the team, offered as suggestions while typing. */
-  readonly assignees = input<string[]>([]);
+  /** People already responsible for tasks, offered as suggestions while typing. */
+  readonly responsibles = input<string[]>([]);
 
   readonly saved = output<Task>();
   readonly closed = output<void>();
@@ -55,7 +55,7 @@ export class TaskCreateModal implements OnInit, OnDestroy {
   protected readonly form = this.fb.group({
     title: ['', [Validators.required, Validators.pattern(/\S/), Validators.maxLength(120)]],
     description: ['', Validators.maxLength(500)],
-    assignee: ['', [Validators.required, Validators.pattern(/\S/), Validators.maxLength(80)]],
+    responsible: ['', [Validators.required, Validators.pattern(/\S/), Validators.maxLength(80)]],
     status: ['' as TaskStatus | '', Validators.required],
     priority: ['' as TaskPriority | '', Validators.required],
   });
@@ -92,7 +92,7 @@ export class TaskCreateModal implements OnInit, OnDestroy {
       this.form.setValue({
         title: task.title,
         description: task.description,
-        assignee: task.assignee,
+        responsible: task.responsible,
         status: task.status,
         priority: task.priority,
       });
@@ -116,7 +116,7 @@ export class TaskCreateModal implements OnInit, OnDestroy {
     const input: CreateTaskInput = {
       title: value.title.trim(),
       description: value.description.trim(),
-      assignee: value.assignee.trim(),
+      responsible: value.responsible.trim(),
       status: value.status as TaskStatus,
       priority: value.priority as TaskPriority,
     };

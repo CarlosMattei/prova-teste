@@ -4,7 +4,8 @@
       type="button"
       class="icon-btn delete"
       aria-label="Delete task"
-      title="Delete task"
+      [title]="deleteAvailable ? 'Excluir tarefa' : 'Exclusão disponível quando a API Java suportar'"
+      [disabled]="!deleteAvailable"
       (click)="remove.emit(task())"
     >
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
@@ -16,7 +17,8 @@
       type="button"
       class="icon-btn"
       aria-label="Edit task"
-      title="Edit task"
+      [title]="editAvailable ? 'Editar tarefa' : 'Edição disponível quando a API Java suportar'"
+      [disabled]="!editAvailable"
       (click)="edit.emit(task())"
     >
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
@@ -27,7 +29,7 @@
 
   <button type="button" class="card-body" [attr.aria-pressed]="selected()" (click)="select.emit(task())">
     <span class="title">{{ task().title }}</span>
-    <span class="assignee">{{ task().assignee }}</span>
+    <span class="responsible">{{ task().responsible }}</span>
     <span class="badges">
       <span class="badge text-bg-{{ taskStatus[task().status].badge }}">
         {{ taskStatus[task().status].label }}
