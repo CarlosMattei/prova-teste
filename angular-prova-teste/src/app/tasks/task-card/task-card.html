@@ -1,0 +1,18 @@
+<button
+  type="button"
+  class="task-card"
+  [class.selected]="selected()"
+  [attr.aria-pressed]="selected()"
+  (click)="select.emit(task())"
+>
+  <span class="title">{{ task().title }}</span>
+  <span class="assignee">{{ task().assignee }}</span>
+  <span class="badges">
+    <span class="badge text-bg-{{ taskStatus[task().status].badge }}">
+      {{ taskStatus[task().status].label }}
+    </span>
+    <span class="badge text-bg-{{ taskPriority[task().priority].badge }}">
+      {{ taskPriority[task().priority].label }}
+    </span>
+  </span>
+</button>
