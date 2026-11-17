@@ -87,4 +87,31 @@ describe('App', () => {
     expect(element.querySelector('[role="dialog"]')?.textContent).toContain('Add task');
     expect(element.querySelector<HTMLButtonElement>('button[type="submit"]')?.disabled).toBe(true);
   });
+
+  it('should delete the task after confirming', async () => {
+    const fixture = await render();
+    const element = fixture.nativeElement as HTMLElement;
+
+    element.querySelector<HTMLButtonElement>('app-task-card .icon-btn.delete')!.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const dialog = element.querySelector('[role="alertdialog"]');
+    expect(dialog).not.toBeNull();
+
+    element.querySelector<HTMLButtonElement>('[role="alertdialog"] .btn-danger')!.click();
+    fixture.detectChanges();
+
+    http
+      .expectOne({ method: 'DELETE', url: '/api/tasks/1' })
+      .flush(null, { status: 204, statusText: 'No Content' });
+
+    await fixture.whenStable();
+    http.expectOne('/api/tasks').flush(TASKS.slice(1));
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(element.querySelector('[role="alertdialog"]')).toBeNull();
+    expect(element.querySelectorAll('app-task-card').length).toBe(TASKS.length - 1);
+  });
 });

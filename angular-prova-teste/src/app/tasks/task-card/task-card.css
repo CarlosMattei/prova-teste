@@ -49,14 +49,6 @@
   background: rgb(220 53 69 / 10%);
 }
 
-.icon-btn:disabled,
-.icon-btn:disabled:hover {
-  color: var(--bs-secondary-color, #6c757d);
-  background: none;
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
 .card-body {
   display: flex;
   flex-direction: column;

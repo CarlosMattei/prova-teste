@@ -21,14 +21,14 @@ cd ../../java-prova-teste/prova-teste
 ./mvnw spring-boot:run
 ```
 
-It listens on `http://localhost:8080` and exposes `GET /tasks`, `GET /tasks/{id}` and `POST /tasks`.
-The development server proxies requests under `/api` to it (`/api/tasks` → `/tasks`), so open
-`http://localhost:4200/` and the list is loaded from the API.
+It listens on `http://localhost:8080` and exposes the full task CRUD: `GET /tasks`,
+`GET /tasks/{id}`, `POST /tasks`, `PUT /tasks/{id}`, `PATCH /tasks/{id}/status` and
+`DELETE /tasks/{id}`. The development server proxies requests under `/api` to it
+(`/api/tasks` → `/tasks`), so open `http://localhost:4200/` and the list is loaded from the API.
 
-Editing and deleting are already implemented in `tasks.service.ts`, but the API does not expose
-`PUT /tasks/{id}` or `DELETE /tasks/{id}` yet, so those buttons stay disabled. When the backend
-adds the routes, set `TASK_EDIT_AVAILABLE` and `TASK_DELETE_AVAILABLE` to `true` in
-`src/app/tasks/tasks.service.ts`.
+The UI uses every route: the header button creates tasks (`POST`), the pencil icon edits them
+(`PUT`), the trash icon deletes them (`DELETE`) and the status selector in the details panel
+changes only the status (`PATCH /tasks/{id}/status`).
 
 ## Code scaffolding
 
